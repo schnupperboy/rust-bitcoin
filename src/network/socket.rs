@@ -143,7 +143,7 @@ impl Socket {
     }
 
     /// Produce a version message appropriate for this socket
-    pub fn version_message(&mut self, start_height: i32) -> Result<NetworkMessage, util::Error> {
+    pub fn version_message(&mut self, start_height: i32, relay: bool) -> Result<NetworkMessage, util::Error> {
         let recv_addr = try!(self.receiver_address());
         let send_addr = try!(self.sender_address());
         let timestamp = now().to_timespec().sec;
@@ -157,7 +157,7 @@ impl Socket {
             nonce: self.version_nonce,
             user_agent: self.user_agent.clone(),
             start_height: start_height,
-            relay: false
+            relay: relay
         }))
     }
 

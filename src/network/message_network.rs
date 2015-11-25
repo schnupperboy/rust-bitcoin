@@ -53,7 +53,7 @@ pub struct VersionMessage {
 impl VersionMessage {
     // TODO: we have fixed services and relay to 0
     /// Constructs a new `version` message
-    pub fn new(timestamp: i64, mut socket: Socket, nonce: u64, start_height: i32) -> Result<VersionMessage, util::Error> {
+    pub fn new(timestamp: i64, mut socket: Socket, nonce: u64, start_height: i32, relay: bool) -> Result<VersionMessage, util::Error> {
         let recv_addr = try!(socket.receiver_address());
         let send_addr = try!(socket.sender_address());
 
@@ -66,7 +66,7 @@ impl VersionMessage {
             nonce: nonce,
             user_agent: socket.user_agent,
             start_height: start_height,
-            relay: false
+            relay: relay
         })
     }
 }
