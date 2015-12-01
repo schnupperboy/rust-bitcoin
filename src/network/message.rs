@@ -113,9 +113,12 @@ pub enum NetworkMessage {
     /// `ping`
     Ping(u64),
     /// `pong`
-    Pong(u64)
+    Pong(u64),
     // TODO: reject,
-    // TODO: bloom filtering
+    /// `filterclear`
+    FilterClear
+    // TODO: filterload
+    // TODO: filteradd
     // TODO: alert
 }
 
@@ -136,6 +139,7 @@ impl RawNetworkMessage {
             NetworkMessage::Headers(_) => "headers",
             NetworkMessage::Ping(_)    => "ping",
             NetworkMessage::Pong(_)    => "pong",
+            NetworkMessage::FilterClear => "filterclear",
         }.to_owned()
     }
 }
@@ -159,6 +163,7 @@ impl<S: SimpleEncoder> ConsensusEncodable<S> for RawNetworkMessage {
             NetworkMessage::Headers(ref dat) => serialize(dat),
             NetworkMessage::Ping(ref dat)    => serialize(dat),
             NetworkMessage::Pong(ref dat)    => serialize(dat),
+            NetworkMessage::FilterClear      => Ok(vec![]),
         }.unwrap()).consensus_encode(s));
         Ok(())
     }
@@ -187,6 +192,7 @@ impl<D: SimpleDecoder<Error=util::Error>> ConsensusDecodable<D> for RawNetworkMe
             "headers" => NetworkMessage::Headers(try!(propagate_err("headers".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "ping"    => NetworkMessage::Ping(try!(propagate_err("ping".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "pong"    => NetworkMessage::Ping(try!(propagate_err("pong".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
+            "filterclear" => NetworkMessage::FilterClear,
             "tx"      => NetworkMessage::Tx(try!(propagate_err("tx".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             cmd => return Err(d.error(format!("unrecognized network command `{}`", cmd)))
         };
@@ -242,6 +248,14 @@ mod test {
         assert_eq!(serialize(&RawNetworkMessage { magic: 0xd9b4bef9, payload: NetworkMessage::MemPool }).ok(),
                              Some(vec![0xf9, 0xbe, 0xb4, 0xd9, 0x6d, 0x65, 0x6d, 0x70, 
                                        0x6f, 0x6f, 0x6c, 0x00, 0x00, 0x00, 0x00, 0x00, 
+                                       0x00, 0x00, 0x00, 0x00, 0x5d, 0xf6, 0xe0, 0xe2]));
+    }
+
+    #[test]
+    fn serialize_filterclear_test() {
+        assert_eq!(serialize(&RawNetworkMessage { magic: 0xd9b4bef9, payload: NetworkMessage::FilterClear }).ok(),
+                             Some(vec![0xf9, 0xbe, 0xb4, 0xd9, 0x66, 0x69, 0x6c, 0x74,
+                                       0x65, 0x72, 0x63, 0x6c, 0x65, 0x61, 0x72, 0x00,
                                        0x00, 0x00, 0x00, 0x00, 0x5d, 0xf6, 0xe0, 0xe2]));
     }
 
