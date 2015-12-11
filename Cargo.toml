@@ -28,4 +28,4 @@ secp256k1 = "0.5"
 serde = "0.6"
 strason = "0.3"
 time = "0.1"
-
+murmur3 = { git = "https://github.com/schnupperboy/murmur3.git" }

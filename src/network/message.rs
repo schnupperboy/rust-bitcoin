@@ -119,6 +119,7 @@ pub enum NetworkMessage {
     FilterClear
     // TODO: filterload
     // TODO: filteradd
+    // TODO: mergeblock
     // TODO: alert
 }
 

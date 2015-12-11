@@ -25,6 +25,7 @@ pub mod iter;
 pub mod misc;
 pub mod patricia_tree;
 pub mod uint;
+pub mod bloom;
 
 use byteorder;
 use std::io;

@@ -49,6 +49,7 @@ extern crate serde;
 extern crate strason;
 #[cfg(all(test, feature = "unstable"))] extern crate test;
 extern crate time;
+extern crate murmur3;
 
 #[cfg(test)]
 #[macro_use]
