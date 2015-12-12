@@ -28,3 +28,4 @@ pub mod listener;
 pub mod message;
 pub mod message_blockdata;
 pub mod message_network;
+pub mod message_filter;

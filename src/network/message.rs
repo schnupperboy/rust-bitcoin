@@ -28,6 +28,7 @@ use blockdata::transaction;
 use network::address::Address;
 use network::message_network;
 use network::message_blockdata;
+use network::message_filter;
 use network::encodable::{ConsensusDecodable, ConsensusEncodable};
 use network::encodable::CheckedData;
 use network::serialize::{serialize, RawDecoder, SimpleEncoder, SimpleDecoder};
@@ -115,11 +116,14 @@ pub enum NetworkMessage {
     /// `pong`
     Pong(u64),
     // TODO: reject,
+    /// `filterload`
+    FilterLoad(message_filter::FilterLoadMessage),
+    /// `filteradd`
+    FilterAdd(message_filter::FilterAddMessage),
     /// `filterclear`
-    FilterClear
-    // TODO: filterload
-    // TODO: filteradd
-    // TODO: mergeblock
+    FilterClear,
+    /// `merkleblock`
+    MerkleBlock(message_filter::MerkleBlockMessage),
     // TODO: alert
 }
 
@@ -140,7 +144,10 @@ impl RawNetworkMessage {
             NetworkMessage::Headers(_) => "headers",
             NetworkMessage::Ping(_)    => "ping",
             NetworkMessage::Pong(_)    => "pong",
+            NetworkMessage::FilterLoad(_) => "filterload",
+            NetworkMessage::FilterAdd(_) => "filteradd",
             NetworkMessage::FilterClear => "filterclear",
+            NetworkMessage::MerkleBlock(_) => "merkleblock"
         }.to_owned()
     }
 }
@@ -164,7 +171,10 @@ impl<S: SimpleEncoder> ConsensusEncodable<S> for RawNetworkMessage {
             NetworkMessage::Headers(ref dat) => serialize(dat),
             NetworkMessage::Ping(ref dat)    => serialize(dat),
             NetworkMessage::Pong(ref dat)    => serialize(dat),
+            NetworkMessage::FilterLoad(ref dat) => serialize(dat),
+            NetworkMessage::FilterAdd(ref dat) => serialize(dat),
             NetworkMessage::FilterClear      => Ok(vec![]),
+            NetworkMessage::MerkleBlock(ref dat) => serialize(dat)
         }.unwrap()).consensus_encode(s));
         Ok(())
     }
@@ -193,7 +203,10 @@ impl<D: SimpleDecoder<Error=util::Error>> ConsensusDecodable<D> for RawNetworkMe
             "headers" => NetworkMessage::Headers(try!(propagate_err("headers".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "ping"    => NetworkMessage::Ping(try!(propagate_err("ping".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "pong"    => NetworkMessage::Ping(try!(propagate_err("pong".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
+            "filterload"    => NetworkMessage::FilterLoad(try!(propagate_err("filterload".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
+            "filteradd"    => NetworkMessage::FilterAdd(try!(propagate_err("filteradd".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "filterclear" => NetworkMessage::FilterClear,
+            "merkleblock"    => NetworkMessage::MerkleBlock(try!(propagate_err("merkleblock".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             "tx"      => NetworkMessage::Tx(try!(propagate_err("tx".to_owned(), ConsensusDecodable::consensus_decode(&mut mem_d)))),
             cmd => return Err(d.error(format!("unrecognized network command `{}`", cmd)))
         };
