@@ -31,7 +31,9 @@ pub enum InvType {
     /// Transaction
     Transaction,
     /// Block
-    Block
+    Block,
+    /// Filtered Block
+    FilteredBlock
 }
 
 // Some simple messages
@@ -103,7 +105,8 @@ impl<S: SimpleEncoder> ConsensusEncodable<S> for Inventory {
         try!(match self.inv_type {
             InvType::Error => 0u32, 
             InvType::Transaction => 1,
-            InvType::Block => 2
+            InvType::Block => 2,
+            InvType::FilteredBlock => 3
         }.consensus_encode(s));
         self.hash.consensus_encode(s)
     }
@@ -118,6 +121,7 @@ impl<D: SimpleDecoder> ConsensusDecodable<D> for Inventory {
                 0 => InvType::Error,
                 1 => InvType::Transaction,
                 2 => InvType::Block,
+                3 => InvType::FilteredBlock,
                 // TODO do not fail here
                 _ => { panic!("bad inventory type field") }
             },
